@@ -21,6 +21,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { subjects } from "@/constants";
+import { createCompanion } from "@/lib/actions/companion.actions";
+import { redirect } from "next/navigation";
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "Companion is required" }),
@@ -30,8 +32,6 @@ const formSchema = z.object({
   style: z.string().min(1, { message: "Style is required" }),
   duration: z.number().min(1, { message: "Duration is required" }),
 });
-
-type FormSchema = z.infer<typeof formSchema>;
 
 const CompanionForm = () => {
   const form = useForm<z.infer<typeof formSchema>>({
@@ -46,8 +46,15 @@ const CompanionForm = () => {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    console.log(values);
+  const onSubmit = async(values: z.infer<typeof formSchema>) => {
+    const companion = await createCompanion(values);
+
+    if(companion) {
+      redirect (`/companions/${companion.id}`);
+    } else {
+      console.log("Error creating companion");
+      redirect('/');
+    }
   };
 
   return (
@@ -187,7 +194,9 @@ const CompanionForm = () => {
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full cursor-pointer">Build Companion</Button>
+        <Button type="submit" className="w-full cursor-pointer">
+          Build Companion
+        </Button>
       </form>
     </Form>
   );
