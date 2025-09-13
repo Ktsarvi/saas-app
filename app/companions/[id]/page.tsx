@@ -1,3 +1,4 @@
+import CompanionComponent from "@/components/companioncomponent";
 import { getCompanion } from "@/lib/actions/companion.actions";
 import { getSubjectColor } from "@/lib/utils";
 import { currentUser } from "@clerk/nextjs/server";
@@ -13,8 +14,10 @@ interface CompanionSessionPageProps {
 
 const CompanionSession = async ({ params }: CompanionSessionPageProps) => {
   const { id } = await params;
-  const {name, subject, topic, title, duration} = await getCompanion(id);
+  const companion = await getCompanion(id);
   const user = await currentUser();
+
+  const { name, subject, topic, duration } = companion;
 
   if (!user) redirect("/sign-in");
   if (!name) redirect("/companions");
@@ -27,7 +30,12 @@ const CompanionSession = async ({ params }: CompanionSessionPageProps) => {
             className="size-[72px] flex items-center justify-center rounded-lg max-md:hidden"
             style={{ backgroundColor: getSubjectColor(subject) }}
           >
-            <Image src= {`/icons/${subject}.svg`} alt={name} width={35} height={35} />
+            <Image
+              src={`/icons/${subject}.svg`}
+              alt={name}
+              width={35}
+              height={35}
+            />
           </div>
 
           <div className="flex flex-col gap-2">
@@ -39,8 +47,16 @@ const CompanionSession = async ({ params }: CompanionSessionPageProps) => {
           </div>
         </div>
 
-        <div className="items-start text-2xl max-md:hidden">{duration} minutes</div>
+        <div className="items-start text-2xl max-md:hidden">
+          {duration} minutes
+        </div>
       </article>
+      <CompanionComponent 
+        {...companion}
+        companionId={id}
+        userName={user.firstName!}
+        userImage={user.imageUrl!}
+      />
     </main>
   );
 };
