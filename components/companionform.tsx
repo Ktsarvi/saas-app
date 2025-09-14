@@ -23,6 +23,7 @@ import {
 import { subjects } from "@/constants";
 import { createCompanion } from "@/lib/actions/companion.actions";
 import { redirect } from "next/navigation";
+import { Textarea } from "./ui/textarea";
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "Companion is required" }),
@@ -116,7 +117,7 @@ const CompanionForm = () => {
             <FormItem>
               <FormLabel>What should this companion teach?</FormLabel>
               <FormControl>
-                <Input
+                <Textarea
                   placeholder="Enter the topic you want to learn - ex: Derivatives"
                   {...field}
                   className="input"
