@@ -27,6 +27,7 @@ export const getAllCompanions = async ({
   topic,
 }: GetAllCompanions) => {
   const supabase = createSupabaseClient();
+  const { userId } = await auth();
 
   let query = supabase.from("companions").select();
 
@@ -46,7 +47,25 @@ export const getAllCompanions = async ({
 
   if (error) throw new Error(error.message);
 
-  return companions;
+  // If the user is logged in, fetch their bookmarks and mark companions accordingly
+  if (userId && companions && companions.length > 0) {
+    const companionIds = companions.map((c: any) => c.id);
+    const { data: bookmarks, error: bookmarksError } = await supabase
+      .from("bookmarks")
+      .select("companion_id")
+      .eq("user_id", userId)
+      .in("companion_id", companionIds);
+
+    if (bookmarksError) throw new Error(bookmarksError.message);
+
+    const bookmarkedSet = new Set(bookmarks?.map((b: any) => b.companion_id));
+    return companions.map((c: any) => ({
+      ...c,
+      bookmarked: bookmarkedSet.has(c.id),
+    }));
+  }
+
+  return companions?.map((c: any) => ({ ...c, bookmarked: false }));
 };
 
 export const getCompanion = async (id: string) => {
@@ -157,6 +176,19 @@ export const addBookmark = async (companionId: string, path: string) => {
   const { userId } = await auth();
   if (!userId) return;
   const supabase = createSupabaseClient();
+  // Guard against duplicates if one already exists
+  const { data: existing } = await supabase
+    .from("bookmarks")
+    .select("id")
+    .eq("companion_id", companionId)
+    .eq("user_id", userId)
+    .limit(1)
+    .maybeSingle();
+  if (existing) {
+    // Already bookmarked – just revalidate so UI updates
+    revalidatePath(path);
+    return existing;
+  }
   const { data, error } = await supabase.from("bookmarks").insert({
     companion_id: companionId,
     user_id: userId,
@@ -197,5 +229,5 @@ export const getBookmarkedCompanions = async (userId: string) => {
     throw new Error(error.message);
   }
   // We don't need the bookmarks data, so we return only the companions
-  return data.map(({ companions }) => companions);
+  return data.map(({ companions }) => ({ ...companions, bookmarked: true }));
 };
