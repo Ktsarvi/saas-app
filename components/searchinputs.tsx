@@ -38,7 +38,7 @@ const SearchInputs = () => {
   }, [searchQuery, router, pathname, searchParams]);
 
   return (
-    <div className="relative border border-black rounded-lg items-center flex gap-2 px-2 py-1 h-fit">
+    <div className="relative border border-border rounded-lg items-center flex gap-2 px-2 py-1 h-fit bg-card">
       <Image src="/icons/search.svg" alt="search" width={15} height={15} />
       <input
         placeholder="Search companions ..."

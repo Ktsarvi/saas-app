@@ -6,7 +6,6 @@ import Lottie, { LottieRefCurrentProps } from "lottie-react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import soundwaves from "@/constants/soundwaves.json";
-import { ca } from "zod/locales";
 import { addToSessionHistory } from "@/lib/actions/companion.actions";
 
 enum CallStatus {
@@ -180,7 +179,7 @@ const CompanionComponent = ({
           </button>
           <button
             className={cn(
-              "rounded-lg py-2 cursor-pointer transition-colors w-full text-white",
+              "rounded-lg py-2 cursor-pointer transition-colors w-full text-primary-foreground",
               callStatus === CallStatus.ACTIVE ? "bg-red-700" : "bg-primary",
               callStatus === CallStatus.CONNECTING && "animate-pulse"
             )}

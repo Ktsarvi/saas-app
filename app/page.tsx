@@ -14,24 +14,31 @@ const Page = async () => {
 
   return (
     <main>
-      <h1>Popular Companions</h1>
-      <section className="home-section">
-        {companions.map((companion) => (
-          <CompanionCard
-            key={companion.id}
-            {...companion}
-            color ={getSubjectColor(companion.subject)}
-          />
-        ))}
-      </section>
+      <section className="grid gap-6 lg:grid-cols-[minmax(260px,380px),1fr]">
+        {/* Left column: companions list stacked */}
+        <div className="flex flex-col gap-4">
+          {companions.map((companion) => (
+            <CompanionCard
+              key={companion.id}
+              {...companion}
+              color={getSubjectColor(companion.subject)}
+            />
+          ))}
+        </div>
 
-      <section className="home-section">
-        <CompanionList
-          title="Recently completed lessons"
-          companions={recentSessionCompanions}
-          classNames="w-2/3 max-lg:w-full"
-        />
-        <Cta />
+        {/* Right column: CTA (top right) */}
+        <div className="flex flex-col gap-6">
+          <Cta />
+          <CompanionList
+            title="Recent lessons"
+            companions={recentSessionCompanions}
+            classNames="w-full"
+          />
+        </div>
+
+        {/* Right column: Recent lessons (bottom right) */}
+        <div className="lg:col-start-2 lg:row-start-2">
+        </div>
       </section>
     </main>
   );

@@ -47,7 +47,7 @@ const Profile = async () => {
         </div>
 
         <div className="flex gap-4">
-          <div className="border border-black rounded-lg p-3 gap-2 flex flex-col h-fit">
+          <div className="border border-border bg-card rounded-lg p-3 gap-2 flex flex-col h-fit">
             <div className="flex gap-2 items-center">
               <Image
                 src="/icons/check.svg"
@@ -60,7 +60,7 @@ const Profile = async () => {
             <div>Lessons Completed</div>
           </div>
 
-          <div className="border border-black rounded-lg p-3 gap-2 flex flex-col h-fit">
+          <div className="border border-border bg-card rounded-lg p-3 gap-2 flex flex-col h-fit">
             <div className="flex gap-2 items-center">
               <Image
                 src="/icons/cap.svg"
