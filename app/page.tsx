@@ -30,7 +30,7 @@ const Page = async () => {
         <div className="flex flex-col gap-6">
           <Cta />
           <CompanionList
-            title="Recent lessons"
+            title="Recent Lessons"
             companions={recentSessionCompanions}
             classNames="w-full"
           />

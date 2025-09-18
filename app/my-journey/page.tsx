@@ -50,19 +50,6 @@ const Profile = async () => {
           <div className="border border-border bg-card rounded-lg p-3 gap-2 flex flex-col h-fit">
             <div className="flex gap-2 items-center">
               <Image
-                src="/icons/check.svg"
-                alt="checkmark "
-                width={22}
-                height={22}
-              />
-              <p className="text-2xl font-bold">{sessionHistory.length}</p>
-            </div>
-            <div>Lessons Completed</div>
-          </div>
-
-          <div className="border border-border bg-card rounded-lg p-3 gap-2 flex flex-col h-fit">
-            <div className="flex gap-2 items-center">
-              <Image
                 src="/icons/cap.svg"
                 alt="capmark "
                 width={22}
@@ -72,28 +59,40 @@ const Profile = async () => {
             </div>
             <div>Companions Created</div>
           </div>
+          <div className="border border-border bg-card rounded-lg p-3 gap-2 flex flex-col h-fit">
+            <div className="flex gap-2 items-center">
+              <Image
+                src="/icons/check.svg"
+                alt="checkmark "
+                width={22}
+                height={22}
+              />
+              <p className="text-2xl font-bold">{sessionHistory.length}</p>
+            </div>
+            <div>Lessons Completed</div>
+          </div>
         </div>
       </section>
 
       <Accordion type="multiple">
         <AccordionItem value="bookmarks">
           <AccordionTrigger className="text-2xl font-bold">
-            Bookmarked Companions {`(${bookmarkedCompanions.length})`}
+            Favorites {`(${bookmarkedCompanions.length})`}
           </AccordionTrigger>
           <AccordionContent>
             <CompanionList
               companions={bookmarkedCompanions}
-              title="Bookmarked Companions"
+              title="Favorites"
             />
           </AccordionContent>
         </AccordionItem>
         <AccordionItem value="recent">
           <AccordionTrigger className="text-2xl font-bold">
-            Recent Sessions
+            Recent Lessons
           </AccordionTrigger>
           <AccordionContent>
             <CompanionList
-              title="Recent Sessions"
+              title="Recent Lessons"
               companions={sessionHistory}
             />
           </AccordionContent>

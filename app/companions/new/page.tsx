@@ -15,7 +15,7 @@ const NewCompanion = async () => {
     <main className="min-lg:w-1/3 min-md:w-2/3 items-center justify-center">
       {canCreateCompanion ? (
         <article className="w-full gap-4 flex flex-col">
-          <h1>Companion builder</h1>
+          <h1>Companion Creator</h1>
 
           <CompanionForm />
         </article>
@@ -27,9 +27,9 @@ const NewCompanion = async () => {
             width={360}
             height={230}
           />
-          <div className="cta-badge"> Upgrade your plan</div>
+          <div className="cta-badge">Upgrade your plan</div>
           <h1>You’ve Reached Your Limit</h1>
-          <p>You’ve reached your companion limit. Upgrade to create more companions and premium features.</p> 
+          <p>You've hit your maximum number of companions. To create additional companions and access premium features, please upgrade your plan.</p> 
           <Link href="/subscription" className="btn-primary w-full justify-center">Upgrade My Plan</Link>
         </article>
       )}
