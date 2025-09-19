@@ -83,9 +83,26 @@ export const getCompanion = async (id: string) => {
 export const addToSessionHistory = async (companionId: string) => {
   const { userId } = await auth();
   const supabase = createSupabaseClient();
+  
+  // Check if there's already a recent session for this companion (within last 5 minutes)
+  const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+  const { data: existingSession } = await supabase
+    .from("session_history")
+    .select("id")
+    .eq("companion_id", companionId)
+    .eq("user_id", userId)
+    .gte("created_at", fiveMinutesAgo)
+    .limit(1)
+    .maybeSingle();
+
+  // If a recent session exists, don't create a duplicate
+  if (existingSession) {
+    return existingSession;
+  }
+
   const { data, error } = await supabase
     .from("session_history")
-    .insert({ user_id: userId, companion_id: companionId });
+    .insert({ companion_id: companionId, user_id: userId });
 
   if (error) {
     throw new Error(error.message);
@@ -106,7 +123,7 @@ export const getRecentSessions = async (limit = 10) => {
     throw new Error(error.message);
   }
 
-  return data?.map(({ companions }) => companions);
+  return data.map(({ companions }) => companions);
 };
 
 export const getUserSessions = async (userId: string, limit = 10) => {

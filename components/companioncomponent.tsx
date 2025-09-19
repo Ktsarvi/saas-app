@@ -31,6 +31,7 @@ const CompanionComponent = ({
   const [messages, setMessages] = useState<SavedMessage[]>([]);
 
   const lottieRef = useRef<LottieRefCurrentProps>(null);
+  const sessionAddedRef = useRef(false);
 
   useEffect(() => {
     if (lottieRef) {
@@ -40,11 +41,18 @@ const CompanionComponent = ({
   }, [isSpeaking, lottieRef]);
 
   useEffect(() => {
-    const onCallStart = () => setcallStatus(CallStatus.ACTIVE);
+    const onCallStart = () => {
+      setcallStatus(CallStatus.ACTIVE);
+      sessionAddedRef.current = false; // Reset for new call
+    };
 
     const onCallEnd = () => {
       setcallStatus(CallStatus.FINISHED);
-      addToSessionHistory(companionId);
+      // Only add to session history if we haven't already done so
+      if (!sessionAddedRef.current) {
+        sessionAddedRef.current = true;
+        addToSessionHistory(companionId);
+      }
     };
 
     const onMessage = (message: Message) => {
@@ -68,12 +76,12 @@ const CompanionComponent = ({
     vapi.on("speech-end", onSpeachEnd);
 
     return () => {
-      vapi.off("call_start", onCallStart);
-      vapi.off("call_end", onCallEnd);
+      vapi.off("call-start", onCallStart);
+      vapi.off("call-end", onCallEnd);
       vapi.off("message", onMessage);
       vapi.off("error", onError);
-      vapi.off("speech_start", onSpeachStart);
-      vapi.off("speech_end", onSpeachEnd);
+      vapi.off("speech-start", onSpeachStart);
+      vapi.off("speech-end", onSpeachEnd);
     };
   }, []);
 
