@@ -196,10 +196,10 @@ const CompanionComponent = ({
             }
           >
             {callStatus === CallStatus.ACTIVE
-              ? "End Session"
+              ? "End Lesson"
               : callStatus === CallStatus.CONNECTING
               ? "Connecting"
-              : "Start Session"}
+              : "Start Lesson"}
           </button>
         </div>
       </section>
