@@ -135,8 +135,8 @@ const CompanionComponent = ({
               <Image
                 src={`/icons/${subject}.svg`}
                 alt={subject}
-                width={150}
-                height={150}
+                width={100}
+                height={100}
                 className="max-sm:w-fit"
               />
             </div>
@@ -156,7 +156,7 @@ const CompanionComponent = ({
             </div>
           </div>
 
-          <p className="font-bold text-2xl">{name}</p>
+          <p className="font-bold text-3xl">{name}</p>
         </div>
 
         <div className="user-section">
@@ -196,7 +196,7 @@ const CompanionComponent = ({
             }
           >
             {callStatus === CallStatus.ACTIVE
-              ? "End Lesson"
+              ? "End lesson"
               : callStatus === CallStatus.CONNECTING
               ? "Connecting"
               : "Start Lesson"}
