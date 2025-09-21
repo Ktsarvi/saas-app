@@ -13,7 +13,7 @@ import { getSubjectColor } from "@/lib/utils";
 
 interface CompanionListProps {
   title: string;
-  companions?: Companion[];
+  companions?: any[];
   classNames?: string;
 }
 

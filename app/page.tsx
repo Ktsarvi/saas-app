@@ -8,6 +8,7 @@ import {
 } from "@/lib/actions/companion.actions";
 import { getSubjectColor } from "@/lib/utils";
 import { SignInButton, SignedIn, SignedOut } from "@clerk/nextjs";
+import Link from "next/link";
 
 const Page = async () => {
   const companions = await getAllCompanions({ limit: 3 });
@@ -37,23 +38,75 @@ const Page = async () => {
       <section className="grid gap-6 lg:grid-cols-[minmax(260px,380px),1fr]">
         {/* Left column: companions list stacked */}
         <div className="flex flex-col gap-4">
-          {companions.map((companion) => (
-            <CompanionCard
-              key={companion.id}
-              {...companion}
-              color={getSubjectColor(companion.subject)}
-            />
-          ))}
+          <SignedIn>
+            {companions.length === 0 ? (
+              <div className="text-center py-8 bg-gray-50 rounded-lg border border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                  No companions yet
+                </h3>
+                <p className="text-gray-500 mb-4">
+                  Create your first AI learning companion to get started!
+                </p>
+                <Link 
+                  href="/companions/new" 
+                  className="btn-primary inline-flex items-center gap-2"
+                >
+                  Create Companion
+                </Link>
+              </div>
+            ) : (
+              companions.map((companion) => (
+                <CompanionCard
+                  key={companion.id}
+                  {...companion}
+                  color={getSubjectColor(companion.subject)}
+                />
+              ))
+            )}
+          </SignedIn>
+          <SignedOut>
+            <div className="text-center py-8 bg-gray-50 rounded-lg border border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                Sign in to see your companions
+              </h3>
+              <p className="text-gray-500">
+                Create and manage your AI learning companions after signing in.
+              </p>
+            </div>
+          </SignedOut>
         </div>
 
         {/* Right column: CTA (top right) */}
         <div className="flex flex-col gap-6">
           <Cta />
-          <CompanionList
-            title="Recent Lessons"
-            companions={recentSessionCompanions}
-            classNames="w-full"
-          />
+          <SignedIn>
+            {recentSessionCompanions.length === 0 ? (
+              <div className="text-center py-8 bg-gray-50 rounded-lg border border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                  No recent lessons
+                </h3>
+                <p className="text-gray-500">
+                  Start a conversation with one of your companions to see your recent lessons here.
+                </p>
+              </div>
+            ) : (
+              <CompanionList
+                title="Recent Lessons"
+                companions={recentSessionCompanions}
+                classNames="w-full"
+              />
+            )}
+          </SignedIn>
+          <SignedOut>
+            <div className="text-center py-8 bg-gray-50 rounded-lg border border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                Recent Lessons
+              </h3>
+              <p className="text-gray-500">
+                Sign in to track your learning progress and see your recent lessons here.
+              </p>
+            </div>
+          </SignedOut>
         </div>
 
         {/* Right column: Recent lessons (bottom right) */}

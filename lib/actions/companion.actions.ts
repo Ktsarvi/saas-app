@@ -29,7 +29,12 @@ export const getAllCompanions = async ({
   const supabase = createSupabaseClient();
   const { userId } = await auth();
 
-  let query = supabase.from("companions").select();
+  // If user is not logged in, return empty array
+  if (!userId) {
+    return [];
+  }
+
+  let query = supabase.from("companions").select().eq("author", userId);
 
   if (subject && topic) {
     query = query
@@ -47,8 +52,8 @@ export const getAllCompanions = async ({
 
   if (error) throw new Error(error.message);
 
-  // If the user is logged in, fetch their bookmarks and mark companions accordingly
-  if (userId && companions && companions.length > 0) {
+  // Fetch user's bookmarks and mark companions accordingly
+  if (companions && companions.length > 0) {
     const companionIds = companions.map((c: any) => c.id);
     const { data: bookmarks, error: bookmarksError } = await supabase
       .from("bookmarks")
@@ -65,19 +70,29 @@ export const getAllCompanions = async ({
     }));
   }
 
-  return companions?.map((c: any) => ({ ...c, bookmarked: false }));
+  return companions?.map((c: any) => ({ ...c, bookmarked: false })) || [];
 };
 
 export const getCompanion = async (id: string) => {
   const supabase = createSupabaseClient();
+  const { userId } = await auth();
+
+  // If user is not logged in, return null
+  if (!userId) {
+    return null;
+  }
 
   const { data, error } = await supabase
     .from("companions")
     .select()
-    .eq("id", id);
+    .eq("id", id)
+    .eq("author", userId); // Only allow access to user's own companions
 
-  if (error) return console.log(error);
-  return data[0];
+  if (error) {
+    console.log(error);
+    return null;
+  }
+  return data[0] || null;
 };
 
 export const addToSessionHistory = async (companionId: string) => {
@@ -113,9 +128,17 @@ export const addToSessionHistory = async (companionId: string) => {
 
 export const getRecentSessions = async (limit = 10) => {
   const supabase = createSupabaseClient();
+  const { userId } = await auth();
+
+  // If user is not logged in, return empty array
+  if (!userId) {
+    return [];
+  }
+
   const { data, error } = await supabase
     .from("session_history")
     .select(`companions: companion_id (*)`)
+    .eq("user_id", userId)
     .order("created_at", { ascending: false })
     .limit(limit);
 
@@ -123,7 +146,7 @@ export const getRecentSessions = async (limit = 10) => {
     throw new Error(error.message);
   }
 
-  return data.map(({ companions }) => companions);
+  return data?.map(({ companions }) => companions) || [];
 };
 
 export const getUserSessions = async (userId: string, limit = 10) => {
