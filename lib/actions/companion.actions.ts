@@ -4,6 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 import { createSupabaseClient } from "../supabase";
 import { th } from "zod/locales";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 export const createCompanion = async (formData: CreateCompanion) => {
   const { userId: author } = await auth();
@@ -99,6 +100,12 @@ export const addToSessionHistory = async (companionId: string) => {
   const { userId } = await auth();
   const supabase = createSupabaseClient();
   
+  // Enforce monthly conversation limits before recording a new session
+  const { allowed } = await canStartConversation();
+  if (!allowed) {
+    redirect("/limit/conversations");
+  }
+
   // Check if there's already a recent session for this companion (within last 5 minutes)
   const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
   const { data: existingSession } = await supabase
@@ -212,6 +219,39 @@ export const newCompanionPermissions = async () => {
   }
 };
 
+// Checks if the user can start a new conversation (monthly limit by plan/feature)
+export const canStartConversation = async (): Promise<{ allowed: boolean; remaining: number | null }> => {
+  const { userId, has } = await auth();
+  if (!userId) {
+    return { allowed: false, remaining: 0 };
+  }
+
+  // Unlimited: core plan, pro plan, or explicit unlimited feature
+  if (has({ plan: "pro" }) || has({ plan: "core" }) || has({ feature: "unlimited_converstations" })) {
+    return { allowed: true, remaining: null };
+  }
+
+  // Default/basic: 10 per month if feature provided, otherwise also treat as 10
+  const monthlyLimit = has({ feature: "10_converstations_month" }) ? 10 : 10;
+
+  const supabase = createSupabaseClient();
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+  const { data, error } = await supabase
+    .from("session_history")
+    .select("id")
+    .eq("user_id", userId)
+    .gte("created_at", startOfMonth);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const used = data?.length || 0;
+  const remaining = Math.max(monthlyLimit - used, 0);
+  return { allowed: used < monthlyLimit, remaining };
+};
+
 export const addBookmark = async (companionId: string, path: string) => {
   const { userId } = await auth();
   if (!userId) return;
@@ -228,6 +268,11 @@ export const addBookmark = async (companionId: string, path: string) => {
     // Already bookmarked – just revalidate so UI updates
     revalidatePath(path);
     return existing;
+  }
+  // Enforce bookmark limits before creating a new bookmark
+  const { allowed } = await canAddBookmark();
+  if (!allowed) {
+    redirect("/limit/bookmarks");
   }
   const { data, error } = await supabase.from("bookmarks").insert({
     companion_id: companionId,
@@ -270,4 +315,35 @@ export const getBookmarkedCompanions = async (userId: string) => {
   }
   // We don't need the bookmarks data, so we return only the companions
   return data.map(({ companions }) => ({ ...companions, bookmarked: true }));
+};
+
+// Checks if user can add a new bookmark based on plan/feature caps
+export const canAddBookmark = async (): Promise<{ allowed: boolean; remaining: number | null }> => {
+  const { userId, has } = await auth();
+  if (!userId) return { allowed: false, remaining: 0 };
+
+  // Unlimited for pro plan or explicit feature
+  if (has({ plan: "pro" }) || has({ feature: "unlimited_bookmarks" })) {
+    return { allowed: true, remaining: null };
+  }
+
+  // Core plan → 3; Basic plan → 1 (or via features)
+  let limit = 1;
+  if (has({ plan: "core" }) || has({ feature: "3_bookmarks" })) {
+    limit = 3;
+  } else if (has({ feature: "1_bookmark" })) {
+    limit = 1;
+  }
+
+  const supabase = createSupabaseClient();
+  const { data, error } = await supabase
+    .from("bookmarks")
+    .select("id")
+    .eq("user_id", userId);
+  if (error) {
+    throw new Error(error.message);
+  }
+  const used = data?.length || 0;
+  const remaining = Math.max(limit - used, 0);
+  return { allowed: used < limit, remaining };
 };

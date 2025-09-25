@@ -94,6 +94,20 @@ const CompanionComponent = ({
   const handleCall = async () => {
     setcallStatus(CallStatus.CONNECTING);
 
+    try {
+      const res = await fetch("/api/conversations/permissions", { cache: "no-store" });
+      const data = await res.json();
+      if (!data.allowed) {
+        setcallStatus(CallStatus.INACIVE);
+        alert("You've reached your monthly conversation limit on your current plan. Upgrade to continue.");
+        return;
+      }
+    } catch (e) {
+      setcallStatus(CallStatus.INACIVE);
+      alert("Unable to verify conversation permissions. Please try again later.");
+      return;
+    }
+
     const assistantOverrides = {
       variableValues: {
         subject,
